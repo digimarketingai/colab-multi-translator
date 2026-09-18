@@ -1,245 +1,353 @@
-# Colab Multi-Translator
+# Gradio Multi-Translator
 
-A lightweight interface for opening **Google Translate**, **DeepL**, and
-**Baidu Translate** with the same source text.
+A lightweight Gradio interface for comparing **Google Translate**,
+**DeepL**, and **Baidu Translate** with one shared text input.
 
-Designed for Google Colab, with an optional standalone HTML mode for
-desktop browsers.
+Maintained under the `digimarketingai` GitHub account.
 
-> This tool opens translation websites. It does not run a translation
-> model, scrape results, or display translated output inside Colab.
+> This is a translation website launcher, not a translation engine.
+> Results appear on the external websites, not inside Gradio.
 
 ## Features
 
-- Shared text input for three translation websites.
-- English, Chinese, Japanese, and Korean language selections.
+- Native Gradio interface.
+- Shared source text.
+- English, Chinese, Japanese, and Korean selections.
 - Simple automatic source-language estimation.
-- Manual source-language override.
-- Live source-text preview.
 - Individual translator buttons.
 - Open All button.
-- Separate popup control panel.
-- Best-effort Close All functionality.
-- Keyboard shortcuts.
-- Standalone HTML export.
+- Generate Links fallback.
+- Best-effort Close All.
+- Local and Google Colab launch instructions.
+- Optional password protection.
 - No translation API keys required by this launcher.
+- No model downloads or GPU required.
 
-## Quick start: Google Colab
+## Requirements
 
-Run the following in a new Colab notebook:
+- Python 3.10 or newer.
+- Git.
+- A modern browser with JavaScript enabled.
+- Internet access for installation and translation websites.
 
-```python
-!git clone https://github.com/digimarketingai/colab-multi-translator.git
-%cd colab-multi-translator
+## Quick start
 
-from multi_translator import create_translator
+After this repository has been published:
 
-translator = create_translator("Hello World!")
+```bash
+git clone https://github.com/digimarketingai/gradio-multi-translator.git
+cd gradio-multi-translator
+python -m pip install -r requirements.txt
+python app.py
 ```
 
-Run the clone command once per fresh notebook runtime.
+The app attempts to open your browser automatically.
 
-If you have already cloned the repository into `/content`, skip cloning:
+If it does not, open:
 
-```python
-%cd /content/colab-multi-translator
-
-from multi_translator import create_translator
-
-translator = create_translator("Enter your text here.")
+```text
+http://127.0.0.1:7860
 ```
 
-If the import reports that IPython is missing, install the dependency:
+Keep the terminal running while using the app.
+
+Press `Ctrl+C` in the terminal to stop the server.
+
+## Recommended: use a virtual environment
+
+### macOS / Linux
+
+```bash
+git clone https://github.com/digimarketingai/gradio-multi-translator.git
+cd gradio-multi-translator
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+python -m pip install -r requirements.txt
+python app.py
+```
+
+### Windows PowerShell
+
+These commands use the virtual environment's Python directly, so activating
+the environment is unnecessary.
+
+```powershell
+git clone https://github.com/digimarketingai/gradio-multi-translator.git
+cd gradio-multi-translator
+
+py -3 -m venv .venv
+
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe app.py
+```
+
+Make sure the Python interpreter selected is version 3.10 or newer.
+
+## Google Colab
+
+### Cell 1: clone and install
+
+Run once per fresh Colab runtime:
 
 ```python
+!git clone https://github.com/digimarketingai/gradio-multi-translator.git
+%cd /content/gradio-multi-translator
 %pip install -r requirements.txt
 ```
 
-### How to use
+If Colab asks you to restart the runtime after installation, restart it,
+change back to the repository directory, and continue.
 
-1. Enter or paste your text.
-2. Select a source language, or use the automatic heuristic.
+### Cell 2: launch
+
+```python
+import gradio as gr
+from app import create_app
+
+demo = create_app("Hello! Welcome to the translation comparison tool.")
+
+demo.launch(
+    share=True,
+    debug=True,
+    theme=gr.themes.Soft(),
+)
+```
+
+Open the generated public Gradio link in a separate browser tab.
+Use that tab if the notebook's embedded interface blocks popups.
+
+The share link is public. Do not use confidential text.
+
+For password protection, use this instead:
+
+```python
+from getpass import getpass
+
+import gradio as gr
+from app import create_app
+
+username = input("Choose a username: ").strip()
+password = getpass("Choose a password: ")
+
+if not username or not password:
+    raise ValueError("Username and password must not be empty.")
+
+demo = create_app()
+
+demo.launch(
+    share=True,
+    debug=True,
+    auth=(username, password),
+    theme=gr.themes.Soft(),
+)
+```
+
+Keep the Colab runtime active while using the app.
+
+## How to use
+
+1. Enter text.
+2. Select the source language or leave it on Automatic.
 3. Select the target language.
-4. Allow popups when your browser asks.
-5. Click **Open All**.
-6. If only the control panel opens, click its **Google**, **DeepL**, and
-   **Baidu** buttons individually.
-7. Compare the results in the external translator windows.
-8. Click **Close All** when finished.
+4. Click an individual translator or Open All.
+5. Allow popups if your browser asks.
+6. If popups are blocked, click Generate Links and use the links.
+7. Compare results on the external websites.
+8. Return to Gradio and click Close All when finished.
 
-The control panel uses the current text and language selections in the
-main interface.
+Changing the input removes previously generated links.
 
-Changing the text does not automatically update external websites.
-Click a translator button again to request an update.
+Existing translator windows do not update automatically.
+Click an opening button again to request a new window or tab.
 
-## Keyboard shortcuts
+## Command-line options
 
-| Shortcut | Action |
-| --- | --- |
-| Ctrl + Enter | Open all, on Windows/Linux |
-| Command + Enter | Open all, on macOS |
-| Esc | Close windows the interface still controls |
-
-Shortcuts require focus inside the main interface or its control panel.
-They do not operate while an external translation website has focus.
-
-## Desktop usage
-
-Clone the repository and run the Python file:
+### Different port
 
 ```bash
-git clone https://github.com/digimarketingai/colab-multi-translator.git
-cd colab-multi-translator
-python multi_translator.py
+python app.py --port 7861
 ```
 
-This creates `translator.html` and attempts to open it in your default
-browser. If the browser does not open, open the file manually.
+### Do not automatically open a browser
 
-The desktop HTML-export path uses Python's standard library.
-IPython is only imported when displaying the interface in a notebook.
-
-Do not use `!python multi_translator.py` to launch the notebook interface
-in Colab. Use `create_translator()` instead.
-
-## Python examples
-
-### Start with empty text
-
-```python
-from multi_translator import create_translator
-
-translator = create_translator()
+```bash
+python app.py --no-browser
 ```
 
-### Start with Chinese text
+### Public share link
 
-```python
-from multi_translator import create_translator
-
-translator = create_translator("你好，歡迎使用多引擎翻譯比較工具！")
+```bash
+python app.py --share
 ```
 
-### Export a standalone HTML page
+A public share link makes the interface accessible to other people.
+Use authentication if access should be restricted.
 
-```python
-from multi_translator import TranslatorInterface
+### Optional authentication
 
-interface = TranslatorInterface()
+Set both environment variables before starting the app.
 
-path = interface.save_html(
-    filename="my_translator.html",
-    text="Hello World!",
-)
+macOS / Linux:
 
-print(path)
+```bash
+export TRANSLATOR_USERNAME="your-username"
+read -s -p "Password: " TRANSLATOR_PASSWORD
+echo
+export TRANSLATOR_PASSWORD
+
+python app.py --share
 ```
 
-When exporting from Colab, download the generated file and open it on
-your own computer:
+The application refuses to start if only one credential is set.
 
-```python
-from google.colab import files
+### Listen on all network interfaces
 
-files.download(str(path))
+```bash
+python app.py --host 0.0.0.0 --no-browser
 ```
 
-## Popup and Close All limitations
+Use this only when you intend to expose the server to your network.
+Configure authentication and your network firewall appropriately.
 
-Browser security rules take priority over this tool.
+## Automatic language estimation
 
-- Browsers may block multiple popups from one click.
-- Use the individual translator buttons if Open All is partially blocked.
-- Browsers may open tabs instead of windows.
-- Requested window sizes and positions may be ignored.
-- External websites may disconnect their window references through
-  cross-origin security policies.
-- Close All can only request closure of windows it still controls.
-- A disconnected window may remain visible and require manual closing.
-- Close All does not close unrelated tabs or windows opened manually.
-- Close translator windows before clearing the output, rerunning the
-  interface cell, or closing the notebook.
+The app uses a simple script heuristic:
 
-The status area says "open requested" or "close requested" intentionally:
-the interface cannot verify the external website's final behavior.
+| Text contains | Estimated language |
+| --- | --- |
+| Japanese kana | Japanese |
+| Korean Hangul | Korean |
+| CJK ideographs | Chinese |
+| None of the above | English |
 
-## Language detection
+This is not a trained language-detection model.
 
-Automatic detection is a simple script heuristic, not a trained
-language-identification model:
-
-- Japanese kana → Japanese.
-- Korean Hangul → Korean.
-- Chinese/CJK ideographs → Chinese.
-- Other input → English.
-
-Japanese containing only kanji, mixed-language passages, and languages
-outside these four choices may be misclassified.
-
-Select the source language manually when needed.
+Mixed text, languages outside the supported selections, and Japanese
+containing only kanji can be misclassified. Select the source manually
+when needed.
 
 The Chinese target mapping requests Traditional Chinese on Google.
-The other launch URLs use a general Chinese language code; output
-variants are not normalized across services.
+The DeepL and Baidu URLs use a general Chinese code; output variants
+are not standardized across providers.
+
+## Browser limitations
+
+- Browsers may block multiple popups from one click.
+- Requested popup windows may appear as tabs instead.
+- External websites may disconnect their window references.
+- Close All can only request closure of windows it still controls.
+- Tabs opened through fallback links must be closed manually.
+- Refreshing the app loses its window registry.
+- Close translator windows before refreshing or closing the app.
+
+The status says “opening requested” rather than “translation successful”
+because the app cannot inspect or verify the external website's result.
+
+## Text length and provider compatibility
+
+The app limits input to 5,000 Unicode code points per action.
+
+This is an application limit, not a guarantee that every provider accepts
+that much text through a URL. Shorter passages are more reliable.
+
+Translation websites may change their URL formats, require login,
+redirect requests, or impose their own restrictions.
+
+If a website opens without the text:
+
+1. Try a shorter passage.
+2. Check the language selections.
+3. Paste the text directly into the website.
+
+URL construction is in `buildURLs()` inside `translator.js`.
 
 ## Privacy
 
-- Clicking a translator button includes your text in the destination URL.
-- The destination website can receive and process that text.
-- Text may remain in browser history or other browser-managed storage.
-- Initial text can also be retained in notebook output or exported HTML.
-- Avoid entering passwords, credentials, or confidential information.
-- This project's code does not implement analytics or a separate backend.
+- The project's translation actions use frontend JavaScript, not Python
+  callbacks that process your text.
+- The project does not implement a database or text logging.
+- Gradio analytics are disabled in the app configuration.
+- Opening a translator includes your text in its destination URL.
+- Translation providers can receive and process that text.
+- URLs may remain in browser history.
+- A shared or remotely hosted app is not an offline or confidential
+  processing environment.
+- Avoid passwords, credentials, personal records, and confidential text.
 
 Each translation provider has its own terms and privacy practices.
-
-## Troubleshooting
-
-### Only the control panel opens
-
-Allow popups and click the translator buttons individually.
-
-### Close All leaves a translator open
-
-The browser or website may have disconnected the window reference.
-Close the remaining window manually.
-
-### The preview displays incorrectly
-
-Use the current `multi_translator.py` file and rerun the interface.
-This version initializes the preview from the textarea rather than
-inserting text directly into JavaScript.
-
-### A translator opens without the expected text
-
-The provider may have changed its URL format or redirected the request.
-Try a shorter passage or paste the text into the translator manually.
-
-URL construction is contained in the JavaScript `makeURL()` function
-inside `multi_translator.py`.
-
-### The interface appears but buttons do nothing
-
-Rerun the cell in an active Colab session. Static notebook previews may
-not execute the interface's JavaScript.
-
-Alternatively, export the standalone HTML page and open it locally.
-
-### The clone command says the directory already exists
-
-Skip cloning and change into the existing repository directory.
 
 ## Project files
 
 ```text
-colab-multi-translator/
+gradio-multi-translator/
+├── app.py             # Gradio interface and launch options
+├── translator.js      # Frontend URL and window handling
+├── requirements.txt   # Python dependency
 ├── README.md
-├── multi_translator.py
-├── requirements.txt
 └── .gitignore
 ```
 
-## Credits
+No Node.js installation is required.
 
-This repository is not affiliated with Google, DeepL, or Baidu.
+## Troubleshooting
+
+### `ModuleNotFoundError: No module named 'gradio'`
+
+Install dependencies using the same interpreter used to run the app:
+
+```bash
+python -m pip install -r requirements.txt
+python app.py
+```
+
+### The port is already in use
+
+```bash
+python app.py --port 7861
+```
+
+### The repository directory already exists
+
+Skip the clone command and enter the existing directory.
+
+### Popups are blocked
+
+Click Generate Links, then open each link individually.
+
+In Colab, open the public Gradio link in a separate browser tab.
+
+### Close All leaves windows open
+
+The browser or destination website may have disconnected the references.
+Close those windows manually.
+
+### A provider no longer opens with prefilled text
+
+Its URL format may have changed. Paste the text manually and update
+`buildURLs()` if necessary.
+
+## Manual testing checklist
+
+Before publishing a release:
+
+- [ ] Install dependencies in a fresh virtual environment.
+- [ ] Start the app with `python app.py`.
+- [ ] Test each translator individually.
+- [ ] Test Generate Links with popups blocked.
+- [ ] Test Open All with popups allowed.
+- [ ] Test Close All and manually close disconnected windows.
+- [ ] Test English, Chinese, Japanese, and Korean.
+- [ ] Test quotes, ampersands, emoji, and line breaks.
+- [ ] Confirm blank input is rejected.
+- [ ] Confirm input over 5,000 code points is rejected.
+- [ ] Confirm editing text removes stale links.
+- [ ] Test the Colab instructions.
+- [ ] Test authentication before sharing a protected instance.
+
+## Disclaimer
+
+This project is not affiliated with Google, DeepL, or Baidu.
+Availability and behavior of their translation websites are outside
+this project's control.
