@@ -260,7 +260,6 @@ def main() -> None:
     demo = create_app()
 
     demo.launch(
-        share=True,
         server_name=args.host,
         server_port=args.port,
         share=args.share,
